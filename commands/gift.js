@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   name: 'gift',
   description: 'Send a sweet virtual gift 🎁',
   execute(message) {
