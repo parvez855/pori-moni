@@ -1,5 +1,5 @@
 import { Client, GatewayIntentBits, Partials, Events, Collection } from 'discord.js';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
@@ -10,7 +10,7 @@ dotenv.config();
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-// 🔧 Bot Setup
+// Bot Setup
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -33,7 +33,7 @@ for (const file of commandFiles) {
   client.commands.set(command.default.name, command.default);
 }
 
-// 🔌 MongoDB Setup
+// MongoDB Setup
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -43,14 +43,13 @@ mongoose.connect(process.env.MONGO_URI, {
 const setupModelPath = path.join(__dirname, 'models', 'SetupChannel.js');
 const { default: SetupChannel } = await import(url.pathToFileURL(setupModelPath).href);
 
-// 🤖 GPT Proxy Setup
-const configuration = new Configuration({
-  apiKey: "pawan_default",
-  basePath: "https://api.pawan.krd/v1"
+// OpenAI GPT Proxy Setup
+const openai = new OpenAI({
+  apiKey: 'pawan_default',
+  baseURL: 'https://api.pawan.krd/v1'
 });
-const openai = new OpenAIApi(configuration);
 
-// 🤖 Bot Personality
+// Bot Personality
 const BOT_NAME = "Pori Moni";
 const BOT_PERSONALITY = `You are ${BOT_NAME}, a Banglish-speaking romantic, flirtatious, fun-loving AI girlfriend.
 Your tone is sweet, slightly spicy, sometimes teasing and a little naughty 😉.
@@ -89,7 +88,7 @@ client.on(Events.MessageCreate, async (message) => {
   try {
     await message.channel.sendTyping();
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         { role: 'system', content: BOT_PERSONALITY },
@@ -97,7 +96,7 @@ client.on(Events.MessageCreate, async (message) => {
       ]
     });
 
-    const reply = completion.data.choices[0].message.content.trim();
+    const reply = completion.choices[0].message.content.trim();
     if (reply) message.reply(reply);
   } catch (err) {
     console.error("❌ GPT Proxy error:", err);
