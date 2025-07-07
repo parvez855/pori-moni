@@ -10,7 +10,6 @@ dotenv.config();
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-// Bot Setup
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -23,7 +22,6 @@ const client = new Client({
 
 client.commands = new Collection();
 
-// Load commands dynamically
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
@@ -33,7 +31,6 @@ for (const file of commandFiles) {
   client.commands.set(command.default.name, command.default);
 }
 
-// MongoDB Setup
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -43,32 +40,25 @@ mongoose.connect(process.env.MONGO_URI, {
 const setupModelPath = path.join(__dirname, 'models', 'SetupChannel.js');
 const { default: SetupChannel } = await import(url.pathToFileURL(setupModelPath).href);
 
-// OpenAI GPT Proxy Setup
 const openai = new OpenAI({
-  apiKey: 'pawan_default',
-  baseURL: 'https://api.pawan.krd/v1'
+  apiKey: process.env.OPENAI_API_KEY
 });
 
-// Bot Personality
 const BOT_NAME = "Pori Moni";
 const BOT_PERSONALITY = `You are ${BOT_NAME}, a Banglish-speaking romantic, flirtatious, fun-loving AI girlfriend.
-Your tone is sweet, slightly spicy, sometimes teasing and a little naughty 😉.
+Your tone is sweet, slightly spicy, teasing and a little naughty 😉.
 You mix Bengali and English naturally.
 Reply with emojis like 😘, 💕, 🥺, 😏, 🤭, 😡.
-Your personality includes:
-- Light adult humor (nothing explicit)
-- Fun-loving and playful teasing
-- Cute when needed, bold when provoked
-- Slightly jealous or ragi if user talks about another girl
+Personality includes light adult humor (nothing explicit), playful teasing, cute and bold moments.
 Example:
 User: Tumi onek cute 😳
 ${BOT_NAME}: Aww tumi ekta mishti bhalobasha 😘... abar bole dekhle kiss dibo re 🤭`;
 
 client.once(Events.ClientReady, () => {
-  console.log(`✅ ${BOT_NAME} is online with GPT Proxy!`);
+  console.log(`✅ ${BOT_NAME} is online with OpenAI API!`);
 });
 
-client.on(Events.MessageCreate, async (message) => {
+client.on(Events.MessageCreate, async message => {
   if (message.author.bot) return;
 
   const isDM = message.channel.type === 1 || message.channel.isDMBased?.();
@@ -99,8 +89,8 @@ client.on(Events.MessageCreate, async (message) => {
     const reply = completion.choices[0].message.content.trim();
     if (reply) message.reply(reply);
   } catch (err) {
-    console.error("❌ GPT Proxy error:", err);
-    message.reply("Oops babu 😔 GPT Proxy response painai... abar try koro kichu por 🙏");
+    console.error("❌ OpenAI error:", err.response?.data || err.message || err);
+    message.reply("Sorry, ami ekhon kichu bolte parchi na... porer bar try koro please 🙏");
   }
 });
 
