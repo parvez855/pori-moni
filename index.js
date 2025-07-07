@@ -1,10 +1,14 @@
-// 📁 File: index.js (With Free GPT Proxy Support)
+import { Client, GatewayIntentBits, Partials, Events, Collection } from 'discord.js';
+import { Configuration, OpenAIApi } from 'openai';
+import mongoose from 'mongoose';
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
+import url from 'url';
 
-const { Client, GatewayIntentBits, Partials, Events, Collection } = require('discord.js');
-const { Configuration, OpenAIApi } = require('openai');
-const mongoose = require('mongoose');
-const fs = require('fs');
-require('dotenv').config();
+dotenv.config();
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 // 🔧 Bot Setup
 const client = new Client({
@@ -18,10 +22,15 @@ const client = new Client({
 });
 
 client.commands = new Collection();
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+// Load commands dynamically
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
 for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  client.commands.set(command.name, command);
+  const filePath = path.join(commandsPath, file);
+  const command = await import(url.pathToFileURL(filePath).href);
+  client.commands.set(command.default.name, command.default);
 }
 
 // 🔌 MongoDB Setup
@@ -31,7 +40,8 @@ mongoose.connect(process.env.MONGO_URI, {
 }).then(() => console.log('✅ Connected to MongoDB'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-const SetupChannel = require('./models/SetupChannel');
+const setupModelPath = path.join(__dirname, 'models', 'SetupChannel.js');
+const { default: SetupChannel } = await import(url.pathToFileURL(setupModelPath).href);
 
 // 🤖 GPT Proxy Setup
 const configuration = new Configuration({
