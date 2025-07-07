@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   name: 'kiss',
   description: 'Send a cute kiss 💋',
   execute(message) {
