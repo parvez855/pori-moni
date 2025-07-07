@@ -1,9 +1,8 @@
-
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const schema = new mongoose.Schema({
   guildId: String,
   channelId: String
 });
 
-module.exports = mongoose.model('SetupChannel', schema);
+export default mongoose.model('SetupChannel', schema);
