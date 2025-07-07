@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   name: 'mood',
   description: 'Show Pori Moni’s mood',
   execute(message) {
