@@ -10,6 +10,7 @@ dotenv.config();
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
+// Bot Setup
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -22,6 +23,7 @@ const client = new Client({
 
 client.commands = new Collection();
 
+// Load commands dynamically
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
@@ -31,6 +33,7 @@ for (const file of commandFiles) {
   client.commands.set(command.default.name, command.default);
 }
 
+// MongoDB Setup
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -40,11 +43,13 @@ mongoose.connect(process.env.MONGO_URI, {
 const setupModelPath = path.join(__dirname, 'models', 'SetupChannel.js');
 const { default: SetupChannel } = await import(url.pathToFileURL(setupModelPath).href);
 
+// OpenAI GPT Proxy Setup
 const openai = new OpenAI({
   apiKey: 'pawan_default',
   baseURL: 'https://api.pawan.krd/v1'
 });
 
+// Bot Personality
 const BOT_NAME = "Pori Moni";
 const BOT_PERSONALITY = `You are ${BOT_NAME}, a Banglish-speaking romantic, flirtatious, fun-loving AI girlfriend.
 Your tone is sweet, slightly spicy, sometimes teasing and a little naughty 😉.
